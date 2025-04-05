@@ -144,7 +144,11 @@ export function DashboardComponent() {
       console.log('Loading data for email:', email)
       
       try {
-        const response = await fetch(`/api/portfolios?email=${email}`)
+        const response = await fetch(`/api/portfolios?email=${email}`, {
+          headers: {
+            'Authorization': `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`
+          }
+        })
         const portfoliosData = await response.json()
         console.log('Loaded portfolios:', portfoliosData)
         
@@ -223,6 +227,7 @@ export function DashboardComponent() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`
         },
         body: JSON.stringify({
           email: currentUser.email,
@@ -302,6 +307,7 @@ export function DashboardComponent() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`
         },
         body: JSON.stringify({
           email: currentUser.email,
@@ -350,6 +356,9 @@ export function DashboardComponent() {
         `/api/portfolios?username=${username}&email=${currentUser.email}`,
         {
           method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`
+          }
         }
       )
 
