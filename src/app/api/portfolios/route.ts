@@ -1,6 +1,15 @@
 import { NextResponse } from "next/server";
 import { neon } from "@neondatabase/serverless";
 
+// Authorization check middleware
+const checkAuth = (request: Request) => {
+  const authHeader = request.headers.get('Authorization');
+  if (!authHeader || authHeader !== `Bearer ${process.env.API_SECRET_KEY}`) {
+    return false;
+  }
+  return true;
+};
+
 // Reuse the DB connection helper
 function getDB() {
     if (!process.env.DATABASE_URL) {
@@ -11,6 +20,14 @@ function getDB() {
 
 // GET - Fetch all portfolios or filter by email
 export async function GET(request: Request) {
+    // Add authorization check
+    if (!checkAuth(request)) {
+        return NextResponse.json(
+            { error: "Unauthorized" },
+            { status: 401 }
+        );
+    }
+
     try {
         const { searchParams } = new URL(request.url);
         const email = searchParams.get('email');
@@ -44,6 +61,14 @@ export async function GET(request: Request) {
 
 // POST - Create new portfolio
 export async function POST(request: Request) {
+    // Add authorization check
+    if (!checkAuth(request)) {
+        return NextResponse.json(
+            { error: "Unauthorized" },
+            { status: 401 }
+        );
+    }
+
     try {
         const { email, username, url } = await request.json();
         
@@ -88,54 +113,63 @@ export async function POST(request: Request) {
 
 // Add DELETE method to your portfolios API
 export async function DELETE(request: Request) {
-  try {
-    const { searchParams } = new URL(request.url)
-    const username = searchParams.get('username')
-    const email = searchParams.get('email')
-
-    if (!username || !email) {
-      return NextResponse.json(
-        { error: "Username and email are required" },
-        { status: 400 }
-      )
+    // Add authorization check
+    if (!checkAuth(request)) {
+        return NextResponse.json(
+            { error: "Unauthorized" },
+            { status: 401 }
+        );
     }
 
-    const sql = neon(process.env.DATABASE_URL!)
+    try {
+        const { searchParams } = new URL(request.url)
+        const username = searchParams.get('username')
+        const email = searchParams.get('email')
+
+        if (!username || !email) {
+            return NextResponse.json(
+                { error: "Username and email are required" },
+                { status: 400 }
+            )
+        }
+
+        const sql = neon(process.env.DATABASE_URL!)
+        
+        // Get user_id first
+        const user = await sql`
+            SELECT id FROM users WHERE email = ${email} LIMIT 1
+        `
+
+        if (!user || user.length === 0) {
+            return NextResponse.json(
+                { error: "User not found" },
+                { status: 404 }
+            )
+        }
+
+        const user_id = user[0].id
+
+        // Delete the portfolio
+        const result = await sql`
+            DELETE FROM portfolios 
+            WHERE user_id = ${user_id} 
+            AND username = ${username}
+            RETURNING *
+        `
+
+        if (result.length === 0) {
+            return NextResponse.json(
+                { error: "Portfolio not found" },
+                { status: 404 }
+            )
+        }
+
+        return NextResponse.json(result[0], { status: 200 })
+    } catch (error) {
+        return NextResponse.json(
+            { error: "Failed to delete portfolio" },
+            { status: 500 }
+        )
+    }
     
-    // Get user_id first
-    const user = await sql`
-      SELECT id FROM users WHERE email = ${email} LIMIT 1
-    `
-
-    if (!user || user.length === 0) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
-      )
-    }
-
-    const user_id = user[0].id
-
-    // Delete the portfolio
-    const result = await sql`
-      DELETE FROM portfolios 
-      WHERE user_id = ${user_id} 
-      AND username = ${username}
-      RETURNING *
-    `
-
-    if (result.length === 0) {
-      return NextResponse.json(
-        { error: "Portfolio not found" },
-        { status: 404 }
-      )
-    }
-
-    return NextResponse.json(result[0], { status: 200 })
-  } catch (error) {
-    return NextResponse.json(
-      { error: "Failed to delete portfolio" },
-      { status: 500 }
-    )
-  }
 } 

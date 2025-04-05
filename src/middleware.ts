@@ -17,9 +17,17 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
+  // Protect API routes - require authentication
+  if (path.startsWith('/api/') && !authSession) {
+    return new NextResponse(
+      JSON.stringify({ error: 'Authentication required' }),
+      { status: 401, headers: { 'content-type': 'application/json' } }
+    )
+  }
+
   return NextResponse.next()
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/signin']
+  matcher: ['/dashboard/:path*', '/signin', '/api/:path*']
 } 
