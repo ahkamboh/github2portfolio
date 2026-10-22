@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
@@ -13,6 +13,12 @@ const geistMono = localFont({
   variable: "--font-geist-mono",
   weight: "100 900",
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
 
 export const metadata: Metadata = {
   title: 'GitHub2Portfolio | Ali Hamza Kamboh',
@@ -40,11 +46,6 @@ export const metadata: Metadata = {
     title: 'GitHub2Portfolio Generator',
     description: 'Transform your GitHub profile into a beautiful portfolio website',
     images: ['/og-image.png'], // Same as OG image
-  },
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
   },
   icons: {
     icon: '/favicon.ico',
