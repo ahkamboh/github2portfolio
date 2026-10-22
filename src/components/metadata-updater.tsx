@@ -7,17 +7,14 @@ interface MetadataUpdaterProps {
 }
 
 export function MetadataUpdater({ username }: MetadataUpdaterProps) {
-  const GITHUB_TOKEN = process.env.NEXT_PUBLIC_GITHUB_TOKEN
-
   useEffect(() => {
     async function fetchUserData() {
       try {
         const headers: HeadersInit = {
-          'Accept': 'application/vnd.github.v3+json',
-          'Authorization': `Bearer ${GITHUB_TOKEN}`
+          'Accept': 'application/vnd.github.v3+json'
         }
 
-        const response = await fetch(`https://api.github.com/users/${username}`, {
+        const response = await fetch(`/api/github/users/${username}`, {
           headers
         })
         const data = await response.json()

@@ -22,35 +22,8 @@ export default function GitHubContributions({ username }: { username: string }) 
   useEffect(() => {
     const fetchContributions = async () => {
       try {
-        const query = `
-          query($username: String!) {
-            user(login: $username) {
-              contributionsCollection {
-                contributionCalendar {
-                  totalContributions
-                  weeks {
-                    contributionDays {
-                      contributionCount
-                      date
-                    }
-                  }
-                }
-              }
-            }
-          }
-        `
-
-        const response = await fetch('https://api.github.com/graphql', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${process.env.NEXT_PUBLIC_GITHUB_TOKEN}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            query,
-            variables: { username },
-          }),
-        })
+        // The GraphQL query runs server-side so GITHUB_TOKEN never reaches the browser
+        const response = await fetch(`/api/github/contributions/${username}`)
 
         const data = await response.json()
         

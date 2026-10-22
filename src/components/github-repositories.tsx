@@ -80,8 +80,6 @@ type GitHubFollower = {
   html_url: string
 }
 
-const GITHUB_TOKEN = process.env.NEXT_PUBLIC_GITHUB_TOKEN 
-
 interface GithubRepositoriesProps {
   username: string
 }
@@ -171,11 +169,7 @@ export function GithubRepositories({ username }: GithubRepositoriesProps) {
   async function checkUserExists() {
     setCheckingUser(true)
     try {
-      const response = await fetch(`/api/portfolios/check?username=${username}`, {
-        headers: {
-          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_API_SECRET_KEY}`
-        }
-      })
+      const response = await fetch(`/api/portfolios/check?username=${username}`)
       
       if (response.ok) {
         const data = await response.json()
@@ -196,12 +190,8 @@ export function GithubRepositories({ username }: GithubRepositoriesProps) {
       const headers: HeadersInit = {
         'Accept': 'application/vnd.github.v3+json',
       }
-      
-      if (GITHUB_TOKEN) {
-        headers.Authorization = `Bearer ${GITHUB_TOKEN}`
-      }
 
-      const response = await fetch(`https://api.github.com/users/${username}/repos?per_page=100&page=1`, {
+      const response = await fetch(`/api/github/users/${username}/repos?per_page=100&page=1`, {
         headers
       })
       const repos = await response.json()
@@ -235,12 +225,8 @@ export function GithubRepositories({ username }: GithubRepositoriesProps) {
       const headers: HeadersInit = {
         'Accept': 'application/vnd.github.v3+json',
       }
-      
-      if (GITHUB_TOKEN) {
-        headers.Authorization = `Bearer ${GITHUB_TOKEN}`
-      }
 
-      const response = await fetch(`https://api.github.com/users/${username}`, {
+      const response = await fetch(`/api/github/users/${username}`, {
         headers
       })
       const data = await response.json()
@@ -255,13 +241,9 @@ export function GithubRepositories({ username }: GithubRepositoriesProps) {
       const headers: HeadersInit = {
         'Accept': 'application/vnd.github.v3.raw',
       }
-      
-      if (GITHUB_TOKEN) {
-        headers.Authorization = `Bearer ${GITHUB_TOKEN}`
-      }
 
       const response = await fetch(
-        `https://api.github.com/repos/${username}/${username}/readme`,
+        `/api/github/repos/${username}/${username}/readme`,
         { headers }
       )
       
@@ -303,12 +285,8 @@ export function GithubRepositories({ username }: GithubRepositoriesProps) {
       const headers: HeadersInit = {
         'Accept': 'application/vnd.github.v3+json',
       }
-      
-      if (GITHUB_TOKEN) {
-        headers.Authorization = `Bearer ${GITHUB_TOKEN}`
-      }
 
-      const response = await fetch(`https://api.github.com/repos/${username}/${repoName}/contents/${path}`, {
+      const response = await fetch(`/api/github/repos/${username}/${repoName}/contents/${path}`, {
         headers
       })
       const contents = await response.json()
@@ -326,12 +304,9 @@ export function GithubRepositories({ username }: GithubRepositoriesProps) {
       const headers: HeadersInit = {
         'Accept': 'application/vnd.github.v3+json',
       }
-      
-      if (GITHUB_TOKEN) {
-        headers.Authorization = `Bearer ${GITHUB_TOKEN}`
-      }
 
-      const response = await fetch(url, {
+      // GitHub returns api.github.com URLs; fetch them through our server route instead
+      const response = await fetch(url.replace('https://api.github.com/', '/api/github/'), {
         headers
       })
       const data = await response.json()
@@ -430,12 +405,9 @@ export function GithubRepositories({ username }: GithubRepositoriesProps) {
       const headers: HeadersInit = {
         'Accept': 'application/vnd.github.v3+json',
       }
-      if (GITHUB_TOKEN) {
-        headers.Authorization = `Bearer ${GITHUB_TOKEN}`
-      }
 
       const response = await fetch(
-        `https://api.github.com/users/${username}/followers?per_page=30&page=${page}`,
+        `/api/github/users/${username}/followers?per_page=30&page=${page}`,
         { headers }
       );
       const data = await response.json();
@@ -460,10 +432,7 @@ export function GithubRepositories({ username }: GithubRepositoriesProps) {
       const headers: HeadersInit = {
         'Accept': 'application/vnd.github.v3+json',
       }
-      if (GITHUB_TOKEN) {
-        headers.Authorization = `Bearer ${GITHUB_TOKEN}`
-      }
-      const response = await fetch(`https://api.github.com/users/${username}/following`, {
+      const response = await fetch(`/api/github/users/${username}/following`, {
         headers
       })
       const data = await response.json()

@@ -2,9 +2,15 @@ import { NextResponse } from "next/server";
 import { neon } from "@neondatabase/serverless";
 
 // Authorization check middleware
+// Calls from this app's own pages are same-origin (the browser sets Sec-Fetch-Site,
+// and middleware.ts already requires the session cookie). They send no key: anything
+// shipped to the browser is public. Other callers still need the server-only API_SECRET_KEY.
 const checkAuth = (request: Request) => {
+  if (request.headers.get('sec-fetch-site') === 'same-origin') {
+    return true;
+  }
   const authHeader = request.headers.get('Authorization');
-  if (!authHeader || authHeader !== `Bearer ${process.env.API_SECRET_KEY}`) {
+  if (!process.env.API_SECRET_KEY || !authHeader || authHeader !== `Bearer ${process.env.API_SECRET_KEY}`) {
     return false;
   }
   return true;

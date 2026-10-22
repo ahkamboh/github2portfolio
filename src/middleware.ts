@@ -17,8 +17,11 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
+  // Public GitHub data for portfolio pages (proxied server-side, no secrets exposed)
+  const isPublicApi = path.startsWith('/api/github/')
+
   // Protect API routes - require authentication
-  if (path.startsWith('/api/') && !authSession) {
+  if (path.startsWith('/api/') && !isPublicApi && !authSession) {
     return new NextResponse(
       JSON.stringify({ error: 'Authentication required' }),
       { status: 401, headers: { 'content-type': 'application/json' } }
